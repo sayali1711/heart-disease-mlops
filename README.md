@@ -103,3 +103,33 @@ Request logs (JSON lines) go to stdout and `logs/api.log`.
 - Preprocessing + model are one sklearn `Pipeline`, so serving applies identical transforms.
 - Model selected on cross-validated ROC-AUC, not on the test set; test set reported once.
 - Recall matters clinically (missed disease is costlier than a false alarm) – compare models on it too.
+
+
+## Deployed API access (local testing)
+
+The API is deployed locally, with no public URL.
+
+### Docker
+```
+docker build -t heart-disease-api:latest .
+docker run -d --name heart-api -p 8000:8000 heart-disease-api:latest
+```
+Open http://localhost:8000/docs, or call:
+```
+curl -X POST http://localhost:8000/predict -H "Content-Type: application/json" -d @sample_input.json
+```
+
+### Kubernetes (Minikube)
+```
+minikube start
+minikube image load heart-disease-api:latest
+kubectl apply -f k8s/deployment.yaml -f k8s/service.yaml
+kubectl port-forward svc/heart-disease-api 8080:80
+```
+Open http://localhost:8080/docs.
+
+### Monitoring
+```
+docker compose up --build
+```
+Prometheus is at http://localhost:9090, and Grafana is at http://localhost:3000 (admin / admin).
